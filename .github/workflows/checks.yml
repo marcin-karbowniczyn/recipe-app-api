@@ -1,0 +1,30 @@
+---
+name: Checks
+
+# Trigger: we want this particular GitHub actions to run on push. Anytime we push code to GitHub, it's going to run the jobs we specify in this YAML file.
+on: [push]
+
+# We define a new job called 'test-lint' (this is an id of a job)
+# runs-on: We choose a runner to handle this job. Runner is basically the operating system that we are going to be running the job on.
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04 # Docket and Docker-Compose comes preinstalled on the Ubuntu 20.04 runner
+    steps: # Different things that run for this job (test-lint in this case)
+      - name: Login to Docker Hub # - -> hyphen indicates a start of a new list item. Dictionary in a list
+        uses: docker/login-action@v1 # uses allows us to use a pre-made action that's provided in the GitHub actions repo.
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout # Action provided by GitHub, it checks our code out inside our GitHub Actions job. Better explained in 24
+        uses: actions/checkout@v2
+      - name: Test
+        run: docker-compose run --rm app sh -c "python manage.py test"
+      - name: Lint
+        run: docker-compose run --rm app sh -c "flake8"
+
+# 1.Step -> Login to Docker Hub
+# 2.Step -> Check out using the checkout action
+# 3.Step -> Run tests using docker-compose
+# 4.Step -> Run linting tests using docker-compose
+
