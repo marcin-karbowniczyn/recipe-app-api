@@ -6,8 +6,6 @@ __pycache__/
 # Custom
 .idea
 notatki.txt
-calc.py
-tests.py
 test.py
 
 # C extensions
