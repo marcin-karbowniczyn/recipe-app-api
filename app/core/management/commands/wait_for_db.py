@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     """ Django command to wait for the DB """
 
+    # This method will check if the DB is ready, next up it will finish its execution and allow next commands to be executed (see in docker-compose)
     # This method is obligatory. It gets called every time we run our django commands, in this case wait_for_db
     def handle(self, *args, **options):
         """ Entrypoint for command """
