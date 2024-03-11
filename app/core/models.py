@@ -6,11 +6,15 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         """ Create, save and return a new user """
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        # We set the "using" parameter to support adding multiple DB's.
 
+        # 1. Create user and normalize the email (set the domain part to lowercase)
+        user = self.model(email=self.normalize_email(email), **extra_fields)
+
+        # 2. Hash the password
+        user.set_password(password)
+
+        # 3. Save and return the user
+        user.save(using=self._db)  # We set the "using" parameter to support adding multiple DB's.
         return user
 
 
