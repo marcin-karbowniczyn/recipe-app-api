@@ -1,5 +1,5 @@
 """ Tests for the Django Admin modifications """
-from django.test import TestCase, Client, SimpleTestCase
+from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -38,5 +38,5 @@ class AdminSiteTests(TestCase):
         """ Test if the creater user page works """
         url = reverse('admin:core_user_add')
         res = self.client.get(url)
-        
+
         self.assertEqual(res.status_code, 200)
