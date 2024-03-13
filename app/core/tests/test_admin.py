@@ -20,5 +20,23 @@ class AdminSiteTests(TestCase):
         """ Test that users are listed on a page """
         url = reverse('admin:core_user_changelist')
         res = self.client.get(url)
+
+        # These methods are implemented by Django Test system
         self.assertContains(res, self.user.name)
         self.assertContains(res, self.user.email)
+
+    def test_edit_user_page(self):
+        """ Test that edit users page works """
+        # url -> /admin/core/user/1/change/
+        url = reverse('admin:core_user_change', args=[self.user.id])  # user that is created in setUp
+        res = self.client.get(url)
+
+        # To make sure the page loads sucesfully, we check if the status_code is 200
+        self.assertEqual(res.status_code, 200)
+
+    def test_create_user_page(self):
+        """ Test if the creater user page works """
+        url = reverse('admin:core_user_add')
+        res = self.client.get(url)
+        
+        self.assertEqual(res.status_code, 200)
