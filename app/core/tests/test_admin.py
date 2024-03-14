@@ -7,7 +7,7 @@ from django.urls import reverse
 class AdminSiteTests(TestCase):
     """ Tests for Django Admin """
 
-    # This is called immediately before calling the test method
+    # This is called immediately before calling every test method
     def setUp(self):
         """ Create user and client """
         self.client = Client()
