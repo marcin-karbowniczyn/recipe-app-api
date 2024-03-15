@@ -12,4 +12,5 @@ app_name = 'user'
 # We use as_view() because Django expects a function for this parameter, so we convert this class to function (oversimplified).
 urlpatterns = [
     path('create/', views.CreateUserView.as_view(), name='create'),
+    path('token/', views.CreateTokenView.as_view(), name='token'),
 ]

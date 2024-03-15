@@ -90,7 +90,7 @@ class PublicUserAPITests(TestCase):
 
         # Test if member (key) is inside the container
         self.assertIn('token', res.data)
-        self.assertEqual(res.status_code, '200')  # Testing if it works
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self):
         """ Test if error is returned when credentials are invalid """
