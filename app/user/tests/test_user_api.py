@@ -7,8 +7,10 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
+TOKEN_URL = reverse('user:token')
 
 
+# Helper function
 def create_user(**kwargs):
     """ Create and return a new user """
     return get_user_model().objects.create_user(**kwargs)
@@ -61,9 +63,48 @@ class PublicUserAPITests(TestCase):
             'password': 'pw',
             'name': 'Test Name'
         }
+
+        # 1. Check if error is thrown when trying to create a new user with a short password
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # # exists() returns true if queryset contains any result
+        # 2. Make sure the user wasn't created
+        # exists() returns true if queryset contains any result
         user_exists = get_user_model().objects.filter(email=payload['email']).exists()
         self.assertFalse(user_exists)
+
+    def test_create_token_for_user(self):
+        """ Test if token is generated for valid credentials """
+        user_details = {
+            'name': 'Test Name',
+            'email': 'test@example.com',
+            'password': 'test-user-password123'
+        }
+        create_user(**user_details)
+
+        payload = {
+            'email': user_details['email'],
+            'password': user_details['password'],
+        }
+        res = self.client.post(TOKEN_URL, payload)
+
+        # Test if member (key) is inside the container
+        self.assertIn('token', res.data)
+        self.assertEqual(res.status_code, '200')  # Testing if it works
+
+    def test_create_token_bad_credentials(self):
+        """ Test if error is returned when credentials are invalid """
+        create_user(email='test@example.com', password='goodpass')
+        payload = {'email': 'password', 'password': 'badpass'}
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertNotIn('token', res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_token_blank_password(self):
+        """ Test if error is returned when no password is posted """
+        payload = {'email': 'password', 'password': ''}
+        res = self.client.post(TOKEN_URL, payload)
+
+        self.assertNotIn('token', res.data)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
