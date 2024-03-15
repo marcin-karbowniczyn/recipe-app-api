@@ -28,6 +28,7 @@ class AuthTokenSerializer(serializers.Serializer):
         trim_whitespace=False
     )
 
+    # Unlike in the ModelSerializer, we need to specify validation by ourselves
     def validate(self, attrs):
         """ Validate and authenticate the user """
         email = attrs.get('email')
