@@ -1,7 +1,7 @@
 """ Views for the User API """
 from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
-# from rest_framework.settings import api_settings
+from rest_framework.settings import api_settings
 from .serializers import UserSerializer, AuthTokenSerializer
 
 
@@ -17,4 +17,4 @@ class CreateTokenView(ObtainAuthToken):
     # ObtainAuthToken View by default uses a username instead of email,
     # so we provide our custom serialzier to override this behaviour
     serializer_class = AuthTokenSerializer
-    # renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES  # optional
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES  # optional
