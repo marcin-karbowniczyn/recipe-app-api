@@ -17,7 +17,22 @@ class UserSerializer(serializers.ModelSerializer):
     # This method will be called only if the validation was successful
     def create(self, validated_data):
         """ Create and return a user with encrypted password """
-        return get_user_model().objects.create_user(**validated_data)
+        user = get_user_model().objects.create_user(**validated_data)
+        return user
+
+    # The same case as in create method, we need to override update method to hash the password (by default it's not hashed)
+    def update(self, instance, validated_data):
+        """ Update and return user """
+        # 1. If there is a password return it and remove it from validated_data, if not return None
+        password = validated_data.pop('password', None)
+        # 2. Use the default update class (we don't need to reinvent the wheel)
+        user = super().update(instance, validated_data)
+        # 3. If user wants to change his password, set it to updated user and has it.
+        if password:
+            user.set_password(password)
+            user.save()
+        # 4. Return a user
+        return user
 
 
 class AuthTokenSerializer(serializers.Serializer):

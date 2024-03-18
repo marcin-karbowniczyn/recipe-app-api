@@ -1,5 +1,5 @@
 """ Views for the User API """
-from rest_framework import generics
+from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from .serializers import UserSerializer, AuthTokenSerializer
@@ -18,3 +18,18 @@ class CreateTokenView(ObtainAuthToken):
     # so we provide our custom serialzier to override this behaviour
     serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES  # optional
+
+
+# RetrieveUpdateAPIView is a DRF Api View for getting and updating API objects
+class ManageUserView(generics.RetrieveUpdateAPIView):
+    """ Manage the authenticated user """
+    serializer_class = UserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    # Vid. 72
+    def get_object(self):
+        """ Retrieve and return the authenticated user """
+        # When the user is autehnticated, it will be accesible from request.user
+        # get() executes retrieve() -> retrieve uses get_object() and sends a response
+        return self.request.user
