@@ -9,6 +9,7 @@ from rest_framework import status
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
 ME_URL = reverse('user:me')
+GET_ALL_USERS = reverse('user:users')
 
 
 # Helper function
@@ -149,4 +150,18 @@ class PrivateUserAPITests(TestCase):
 
         self.assertEqual(self.user.name, payload['name'])
         self.assertTrue(self.user.check_password(payload['password']))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_list_all_users_not_allowed(self):
+        """ Test if users that are not admins are forbidden to list all users """
+        res = self.client.get(GET_ALL_USERS)
+
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_all_users_allowed(self):
+        """ Test if admin can get all users """
+        self.user.is_superuser = True
+        self.client.force_authenticate(self.user)
+        res = self.client.get(GET_ALL_USERS)
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
