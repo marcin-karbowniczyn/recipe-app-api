@@ -28,7 +28,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # We need to add this, so Django can add user to the User model's user foreign key field.
     # We need to add user manually, since it's not in the req.data, and it's not processed by the serializer.
     # request.user will be set by Token Authentication
-    # Serializer will handle validated_data
+    # Serializer will be the validated serializer
     def perform_create(self, serializer):
         """ Create a new recipe """
         serializer.save(user=self.request.user)

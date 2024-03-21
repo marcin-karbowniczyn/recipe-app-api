@@ -31,6 +31,11 @@ def create_recipe(user, **kwargs):
     return recipe
 
 
+def create_user(**params):
+    """ Create and return a new user """
+    return get_user_model().objects.create_user(**params)
+
+
 class PublicRecipeAPITests(TestCase):
     """ Test unauthenticated API requests """
 
@@ -40,7 +45,6 @@ class PublicRecipeAPITests(TestCase):
     def test_auth_required(self):
         """ Test if auth is required to call API """
         res = self.client.get(RECIPES_URL)
-
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -49,10 +53,7 @@ class PrivateRecipeAPITests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            email='user@example.com',
-            password='testpass1234'
-        )
+        self.user = create_user(email='user@example.com', password='test1234')
         self.client.force_authenticate(self.user)
 
     def test_retrieve_recipes(self):
@@ -72,10 +73,7 @@ class PrivateRecipeAPITests(TestCase):
 
     def test_recipe_list_limited_to_user(self):
         """ Test list of recipes is limited to authenticated user """
-        other_user = get_user_model().objects.create_user(
-            'other@example.com',
-            'password1234',
-        )
+        other_user = create_user(email='other@example.com', password='password1234')
         create_recipe(user=other_user)
         create_recipe(user=self.user)
 
