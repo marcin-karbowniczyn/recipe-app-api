@@ -7,6 +7,7 @@ __pycache__/
 .idea
 notatki.txt
 leetcode.py
+add_module.py
 
 # C extensions
 *.so
