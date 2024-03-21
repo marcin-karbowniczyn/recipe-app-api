@@ -9,6 +9,13 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['id', 'title', 'time_minutes', 'price', 'link']
+        # extra_kwargs = {'user': {'read_only': True}} # If allowed, remember to add 'user' to the fields
+
+    # Enabling user to be sent in a response as a name of the user, not id of the user
+    # def to_representation(self, instance):
+    #     response = super().to_representation(instance)
+    #     response['user'] = instance.user.name
+    #     return response
 
 
 class RecipeDetailSerializer(RecipeSerializer):

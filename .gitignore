@@ -8,6 +8,7 @@ __pycache__/
 notatki.txt
 leetcode.py
 add_module.py
+mytest.py
 
 # C extensions
 *.so
