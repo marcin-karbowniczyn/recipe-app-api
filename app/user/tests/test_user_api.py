@@ -161,6 +161,7 @@ class PrivateUserAPITests(TestCase):
     def test_list_all_users_allowed(self):
         """ Test if admin can get all users """
         self.user.is_superuser = True
+        self.user.save()
         self.client.force_authenticate(self.user)
         res = self.client.get(GET_ALL_USERS)
 

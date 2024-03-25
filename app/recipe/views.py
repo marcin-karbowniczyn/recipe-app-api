@@ -12,6 +12,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # serializer_class = serializers.RecipeSerializer  # We use get_serializer_class instead
     queryset = Recipe.objects.all()
     authentication_classes = [TokenAuthentication]  # It supports Token Authentication
+    # Note: I can change it later to IsAuthenticatedOrReadOnly to allow anon users to acces GET methods.
     permission_classes = [IsAuthenticated]  # Not only that, user needs to be authenticated
 
     # We specify this, to limit the queryset to only recipes of the authenticated user
@@ -26,7 +27,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return serializers.RecipeSerializer
         return serializers.RecipeDetailSerializer
 
-    # We need to add this, so Django can add user to the User model's user foreign key field.
+    # We need to add this, so Django can add user to the Recipe model's user foreign key field.
     # We need to add user manually, since it's not in the req.data, and it's not processed by the serializer.
     # request.user will be set by Token Authentication
     # Serializer will be the validated serializer
