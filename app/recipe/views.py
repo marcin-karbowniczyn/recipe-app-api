@@ -36,7 +36,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+# We should always define mixins before vewsets.GenericViewSet (DRF docs)
+class TagViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     """ Manage tags in the databse """
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all()
