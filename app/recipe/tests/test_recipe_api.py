@@ -8,13 +8,9 @@ from rest_framework.test import APIClient
 
 from core.models import Recipe
 from ..serializers import RecipeSerializer, RecipeDetailSerializer
+from .utils import detail_url
 
 RECIPES_URL = reverse('recipe:recipe-list')
-
-
-def detail_url(recipe_id):
-    """ Create and return a URL for detailed recipe """
-    return reverse('recipe:recipe-detail', args=[recipe_id])
 
 
 def create_recipe(user, **kwargs):
@@ -88,7 +84,7 @@ class PrivateRecipeAPITests(TestCase):
     def test_get_recipe_detail(self):
         """ Test get recipe detail """
         recipe = create_recipe(user=self.user)
-        res = self.client.get(detail_url(recipe.id))
+        res = self.client.get(detail_url('recipe', recipe.id))
 
         serializer = RecipeDetailSerializer(recipe)
 
@@ -117,7 +113,7 @@ class PrivateRecipeAPITests(TestCase):
         recipe = create_recipe(user=self.user, title='Sample recipe title', link=original_link)
         payload = {'title': 'Updated sample recipe title'}
 
-        res = self.client.patch(detail_url(recipe.id), payload)
+        res = self.client.patch(detail_url('recipe', recipe.id), payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         recipe.refresh_from_db()
@@ -137,7 +133,7 @@ class PrivateRecipeAPITests(TestCase):
             'description': 'New updated description of the recipe.',
         }
         # 3. Update the recipe
-        res = self.client.put(detail_url(recipe.id), payload)
+        res = self.client.put(detail_url('recipe', recipe.id), payload)
 
         # 4. Test if status of the request is 200
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -155,14 +151,14 @@ class PrivateRecipeAPITests(TestCase):
         new_user = create_user(email='user2@example.com', password='test1234')
         recipe = create_recipe(user=self.user)
         payload = {'user': new_user.id}
-        self.client.patch(detail_url(recipe.id), payload)
+        self.client.patch(detail_url('recipe', recipe.id), payload)
 
         recipe.refresh_from_db()
         self.assertEqual(recipe.user, self.user)
 
     def test_delete_recipe(self):
         recipe = create_recipe(self.user)
-        res = self.client.delete(detail_url(recipe.id))
+        res = self.client.delete(detail_url('recipe', recipe.id))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Recipe.objects.filter(id=recipe.id).exists())
@@ -171,7 +167,7 @@ class PrivateRecipeAPITests(TestCase):
         """ Test trying to delete another user's recipe doesn't work """
         new_user = create_user(email='testuser2@example.com', password='Test1234')
         recipe = create_recipe(user=new_user)
-        res = self.client.delete(detail_url(recipe.id))
+        res = self.client.delete(detail_url('recipe', recipe.id))
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Recipe.objects.filter(id=recipe.id).exists())
