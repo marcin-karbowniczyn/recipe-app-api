@@ -180,12 +180,14 @@ class PrivateRecipeAPITests(TestCase):
             'price': Decimal('2.50'),
             'tags': [{'name': 'Thai'}, {'name': 'Dinner'}]
         }
-        # Check if format works without json
         res = self.client.post(RECIPES_URL, payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
         recipes = Recipe.objects.filter(user=self.user)
         print(type(recipes))
+
+        # This 2 lines provide same result, len would be better here because we already saved objects to our memory.
+        # Count method executes a query to the DB -> performs a SELECT COUNT(*)
         self.assertEqual(recipes.count(), 1)
         self.assertEqual(len(recipes), 1)
 
@@ -216,12 +218,12 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(recipe.tags.count(), 2)
         self.assertIn(tag_indian, recipe.tags.all())
 
+        tags = Tag.objects.filter(user=self.user)
+        self.assertEqual(tags.count(), 2)
+
         for tag in payload['tags']:
             exists = recipe.tags.filter(
                 name=tag['name'],
                 user=self.user
             ).exists()
             self.assertTrue(exists)
-
-        tags = Tag.objects.filter(user=self.user)
-        self.assertEqual(tags.count(), 2)
