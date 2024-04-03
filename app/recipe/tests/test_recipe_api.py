@@ -8,9 +8,13 @@ from rest_framework.test import APIClient
 
 from core.models import Recipe, Tag
 from ..serializers import RecipeSerializer, RecipeDetailSerializer
-from .utils import detail_url
 
 RECIPES_URL = reverse('recipe:recipe-list')
+
+
+def detail_url(object_id):
+    """ Create and return a URL for detailed object """
+    return reverse(f'recipe:recipe-detail', args=[object_id])
 
 
 def create_recipe(user, **kwargs):
@@ -84,7 +88,7 @@ class PrivateRecipeAPITests(TestCase):
     def test_get_recipe_detail(self):
         """ Test get recipe detail """
         recipe = create_recipe(user=self.user)
-        res = self.client.get(detail_url('recipe', recipe.id))
+        res = self.client.get(detail_url(recipe.id))
 
         serializer = RecipeDetailSerializer(recipe)
 
@@ -113,7 +117,7 @@ class PrivateRecipeAPITests(TestCase):
         recipe = create_recipe(user=self.user, title='Sample recipe title', link=original_link)
         payload = {'title': 'Updated sample recipe title'}
 
-        res = self.client.patch(detail_url('recipe', recipe.id), payload)
+        res = self.client.patch(detail_url(recipe.id), payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         recipe.refresh_from_db()
@@ -133,7 +137,7 @@ class PrivateRecipeAPITests(TestCase):
             'description': 'New updated description of the recipe.',
         }
         # 3. Update the recipe
-        res = self.client.put(detail_url('recipe', recipe.id), payload)
+        res = self.client.put(detail_url(recipe.id), payload)
 
         # 4. Test if status of the request is 200
         self.assertEqual(res.status_code, status.HTTP_200_OK)
@@ -151,14 +155,14 @@ class PrivateRecipeAPITests(TestCase):
         new_user = create_user(email='user2@example.com', password='test1234')
         recipe = create_recipe(user=self.user)
         payload = {'user': new_user.id}
-        self.client.patch(detail_url('recipe', recipe.id), payload)
+        self.client.patch(detail_url(recipe.id), payload)
 
         recipe.refresh_from_db()
         self.assertEqual(recipe.user, self.user)
 
     def test_delete_recipe(self):
         recipe = create_recipe(self.user)
-        res = self.client.delete(detail_url('recipe', recipe.id))
+        res = self.client.delete(detail_url(recipe.id))
 
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Recipe.objects.filter(id=recipe.id).exists())
@@ -167,7 +171,7 @@ class PrivateRecipeAPITests(TestCase):
         """ Test trying to delete another user's recipe doesn't work """
         new_user = create_user(email='testuser2@example.com', password='Test1234')
         recipe = create_recipe(user=new_user)
-        res = self.client.delete(detail_url('recipe', recipe.id))
+        res = self.client.delete(detail_url(recipe.id))
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Recipe.objects.filter(id=recipe.id).exists())
@@ -180,11 +184,11 @@ class PrivateRecipeAPITests(TestCase):
             'price': Decimal('2.50'),
             'tags': [{'name': 'Thai'}, {'name': 'Dinner'}]
         }
+        # When providing nested objects, we need to specify the format=json, to make sure it will be converted to json.
         res = self.client.post(RECIPES_URL, payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
         recipes = Recipe.objects.filter(user=self.user)
-        print(type(recipes))
 
         # This 2 lines provide same result, len would be better here because we already saved objects to our memory.
         # Count method executes a query to the DB -> performs a SELECT COUNT(*)
@@ -227,3 +231,52 @@ class PrivateRecipeAPITests(TestCase):
                 user=self.user
             ).exists()
             self.assertTrue(exists)
+
+    def test_create_tag_on_update(self):
+        """ Test creating a tag when updating a recipe """
+        recipe = create_recipe(user=self.user)
+        payload = {
+            'tags': [{'name': 'Vegan'}, {'name': 'Dinner'}]
+        }
+        self.assertEqual(len(recipe.tags.all()), 0)
+        # self.assertEqual(Tag.objects.count(), 0)
+        # self.assertFalse(recipe.tags.exists())
+
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()  # Check if I need it
+        for tag in payload['tags']:
+            exists = recipe.tags.filter(name=tag['name'], user=self.user).exists()
+            self.assertTrue(exists)
+
+        # self.assertEqual(res.data['tags'], payload['tags']) # Check if it works
+        # self.assertEqual(recipe.tags.values(), res.data['tags']) # Check if it works
+        # self.assertEqual(recipe.tags.values(), payload['tags']) # Check if it works
+
+    def test_update_recipe_assign_tag(self):
+        """ Test assigning an existing tag when updating a recipe """
+        tag_breakfast = Tag.objects.create(user=self.user, name='Breakfast')
+        recipe = create_recipe(user=self.user)
+        recipe.tags.add(tag_breakfast)
+
+        tag_lunch = Tag.objects.create(user=self.user, name='Lunch')
+        payload = {'tags': [{'name': 'Lunch'}]}
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(tag_lunch, recipe.tags.all())
+        self.assertNotIn(tag_breakfast, recipe.tags.all())
+        # self.assertEqual(Tag.objects.count(), 2)  # Moje, sprawdzić czy działa, czy na pewno nie zduplikował się Tag (sprwadzić to jak wszystkie testy będą przechodzić)
+
+    def test_clear_recipe_tags(self):
+        """ Test clearing a recipes tags """
+        tag = Tag.objects.create(user=self.user, name='Vegan')
+        recipe = create_recipe(user=self.user)
+        recipe.tags.add(tag)
+        payload = {'tags': []}
+
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        # self.assertFalse(recipe.tags.exists()) # Check if works
+        self.assertEqual(recipe.tags.count(), 0)
