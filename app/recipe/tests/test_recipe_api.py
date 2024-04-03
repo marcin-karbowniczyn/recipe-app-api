@@ -236,23 +236,18 @@ class PrivateRecipeAPITests(TestCase):
         """ Test creating a tag when updating a recipe """
         recipe = create_recipe(user=self.user)
         payload = {
-            'tags': [{'name': 'Vegan'}, {'name': 'Dinner'}]
+            'tags': [{'name': 'Lunch'}]
         }
-        self.assertEqual(len(recipe.tags.all()), 0)
-        # self.assertEqual(Tag.objects.count(), 0)
+
+        self.assertEqual(Tag.objects.count(), 0)
+        # self.assertEqual(len(recipe.tags.all()), 0)
         # self.assertFalse(recipe.tags.exists())
 
         res = self.client.patch(detail_url(recipe.id), payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-        recipe.refresh_from_db()  # Check if I need it
-        for tag in payload['tags']:
-            exists = recipe.tags.filter(name=tag['name'], user=self.user).exists()
-            self.assertTrue(exists)
-
-        # self.assertEqual(res.data['tags'], payload['tags']) # Check if it works
-        # self.assertEqual(recipe.tags.values(), res.data['tags']) # Check if it works
-        # self.assertEqual(recipe.tags.values(), payload['tags']) # Check if it works
+        new_tag = Tag.objects.get(user=self.user, name='Lunch')
+        self.assertIn(new_tag, recipe.tags.all())
 
     def test_update_recipe_assign_tag(self):
         """ Test assigning an existing tag when updating a recipe """
@@ -267,7 +262,7 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn(tag_lunch, recipe.tags.all())
         self.assertNotIn(tag_breakfast, recipe.tags.all())
-        # self.assertEqual(Tag.objects.count(), 2)  # Moje, sprawdzić czy działa, czy na pewno nie zduplikował się Tag (sprwadzić to jak wszystkie testy będą przechodzić)
+        self.assertEqual(Tag.objects.count(), 2)
 
     def test_clear_recipe_tags(self):
         """ Test clearing a recipes tags """
@@ -278,5 +273,4 @@ class PrivateRecipeAPITests(TestCase):
 
         res = self.client.patch(detail_url(recipe.id), payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        # self.assertFalse(recipe.tags.exists()) # Check if works
         self.assertEqual(recipe.tags.count(), 0)
