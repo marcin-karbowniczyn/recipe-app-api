@@ -12,9 +12,9 @@ from ..serializers import RecipeSerializer, RecipeDetailSerializer
 RECIPES_URL = reverse('recipe:recipe-list')
 
 
-def detail_url(object_id):
+def detail_url(recipe_id):
     """ Create and return a URL for detailed object """
-    return reverse(f'recipe:recipe-detail', args=[object_id])
+    return reverse(f'recipe:recipe-detail', args=[recipe_id])
 
 
 def create_recipe(user, **kwargs):

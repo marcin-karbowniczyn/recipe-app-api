@@ -8,9 +8,13 @@ from rest_framework.test import APIClient
 
 from core.models import Tag
 from recipe.serializers import TagSerializer
-from .utils import detail_url
 
 TAGS_URL = reverse('recipe:tag-list')
+
+
+def detail_url(tag_id):
+    """ Create and return a URL for detailed object """
+    return reverse(f'recipe:tag-detail', args=[tag_id])
 
 
 def create_user(email='user@example.com', password='test1234'):
@@ -69,7 +73,7 @@ class PrivateTagsAPITests(TestCase):
             'name': 'Pasta'
         }
         tag = Tag.objects.create(user=self.user, name='Vegan')
-        res = self.client.patch(detail_url('tag', tag.id), payload)
+        res = self.client.patch(detail_url(tag.id), payload)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         tag.refresh_from_db()
@@ -78,7 +82,7 @@ class PrivateTagsAPITests(TestCase):
     def test_delete_tag(self):
         """ Test deleting a tag """
         tag = Tag.objects.create(user=self.user, name='Breakfast')
-        res = self.client.delete(detail_url('tag', tag.id))
+        res = self.client.delete(detail_url(tag.id))
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
         tags = Tag.objects.filter(user=self.user)
