@@ -34,8 +34,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             tag_obj, created = Tag.objects.get_or_create(user=authenticated_user, **tag)
             recipe.tags.add(tag_obj)
 
-    # We need to specify this because nested fields are read-only by default.
-    # We need to override create() and update() methods for the creating and updating to work.
+    # We need to specify custom create() and update() methods because nested fields are read-only by default.
+    # We need to override them methods for the creating and updating many-to-many fields to work.
     def create(self, validated_data):
         """ Create a recipe """
         # 1. Remove tags from validated data and return them
