@@ -38,24 +38,36 @@ class RecipeSerializer(serializers.ModelSerializer):
     #     return response
 
     def _get_or_create_tags(self, tags, recipe):
-        """ Handle getting or creating tags """
+        """ Handle getting or creating tags and ingredients """
         authenticated_user = self.context['request'].user
         for tag in tags:
             tag_obj, created = Tag.objects.get_or_create(user=authenticated_user, **tag)
             recipe.tags.add(tag_obj)
 
-    # We need to specify custom create() and update() methods because nested fields are read-only by default.
-    # We need to override them methods for the creating and updating many-to-many fields to work.
+    def _get_or_create_ingredients(self, ingredients, recipe):
+        """ Handle getting or creating ingredients """
+        authenticated_user = self.context['request'].user
+        for ingredient in ingredients:
+            # This makes sure that we won't have repetetive ingredients in the DB.
+            ingredient_obj, created = Ingredient.objects.get_or_create(user=authenticated_user, **ingredient)
+            recipe.ingredients.add(ingredient_obj)
+
+    # We need to specify custom create() and update() methods because nested M2M fields are read-only by default.
+    # We need to override these methods for creating and updating many-to-many fields to work.
+    # validated_data is a python dictionary of all the data passed in the request
+    # By default create() and update() methods in serializer simply call Manager's create and update methods (reminder)
     def create(self, validated_data):
         """ Create a recipe """
-        # 1. Remove tags from validated data and return them
+        # 1. Remove tags and ingredients from validated data and return them
         tags = validated_data.pop('tags', [])
+        ingredients = validated_data.pop('ingredients', [])
 
         # 2. Create a new recipe object with correct values
         recipe = Recipe.objects.create(**validated_data)
 
-        # 3. Get authenticated user from the request and loop through tags from validated data
+        # 3. Get authenticated user from the request and loop through tags and ingredients from validated data
         self._get_or_create_tags(tags, recipe)
+        self._get_or_create_ingredients(ingredients, recipe)
 
         return recipe
 
