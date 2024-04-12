@@ -353,13 +353,13 @@ class PrivateRecipeAPITests(TestCase):
 
         ingredient2 = Ingredient.objects.create(user=self.user, name='Chili')
         payload = {
-            'ingredients': [{'name': 'Salt'}]
+            'ingredients': [{'name': 'Chili'}]
         }
 
         res = self.client.patch(detail_url(recipe.id), payload, format='json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-        ingredients = Ingredient.objects.all()
+        ingredients = recipe.ingredients.all()
         self.assertIn(ingredient2, ingredients)
         self.assertNotIn(ingredient1, ingredients)
 
@@ -377,4 +377,3 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.assertEqual(recipe.ingredients.count(), 0)
-        self.assertEqual(Ingredient.objects.count(), 0)  # Sprawdzić czy dodatki są usuwane całkowicie, czy tylko z recipe
