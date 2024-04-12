@@ -330,3 +330,51 @@ class PrivateRecipeAPITests(TestCase):
         for ingredient in payload['ingredients']:
             exists = recipe.ingredients.filter(name=ingredient['name']).exists()
             self.assertTrue(exists)
+
+    # We implement this feature by ourselves (creating and updating M2M fields is not allowed by default by DRF).
+    # Therefore, we need to test it (it is not done automatically). -> Note for my future self
+    def test_create_ingredient_on_update(self):
+        """ Test creating an ingredient when updating a recipe """
+        recipe = create_recipe(user=self.user)
+        payload = {
+            'ingredients': [{'name': 'Pepper'}]
+        }
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        new_ingredient = Ingredient.objects.get(user=self.user, name='Pepper')
+        self.assertIn(new_ingredient, recipe.ingredients.all())
+
+    def test_update_recipe_assign_ingredient(self):
+        """ Test assigning an existing ingredient when updating a recipe """
+        ingredient1 = Ingredient.objects.create(user=self.user, name='Pepper')
+        recipe = create_recipe(user=self.user)
+        recipe.ingredients.add(ingredient1)
+
+        ingredient2 = Ingredient.objects.create(user=self.user, name='Chili')
+        payload = {
+            'ingredients': [{'name': 'Salt'}]
+        }
+
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        ingredients = Ingredient.objects.all()
+        self.assertIn(ingredient2, ingredients)
+        self.assertNotIn(ingredient1, ingredients)
+
+    def test_clear_recipe_ingredients(self):
+        """ Test clearing a recipe's ingredients """
+        ingredient1 = Ingredient.objects.create(user=self.user, name='Pepper')
+        ingredient2 = Ingredient.objects.create(user=self.user, name='Salt')
+        recipe = create_recipe(self.user)
+        recipe.ingredients.add(ingredient1, ingredient2)
+        payload = {
+            'ingredients': []
+        }
+
+        res = self.client.patch(detail_url(recipe.id), payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(recipe.ingredients.count(), 0)
+        self.assertEqual(Ingredient.objects.count(), 0)  # Sprawdzić czy dodatki są usuwane całkowicie, czy tylko z recipe
