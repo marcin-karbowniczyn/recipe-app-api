@@ -44,12 +44,13 @@ class PrivateIngredientsAPITests(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_retrieving_ingredients(self):
+        """ Test retrieving the ingredients """
         Ingredient.objects.create(user=self.user, name='Salt')
         Ingredient.objects.create(user=self.user, name='Pepper')
 
         res = self.client.get(INGREDIENTS_URL)
 
-        ingredients = Ingredient.objects.all().order_by('name')
+        ingredients = Ingredient.objects.all().order_by('-name')
         serializer = IngredientSerializer(ingredients, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
