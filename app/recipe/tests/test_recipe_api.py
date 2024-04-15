@@ -297,6 +297,23 @@ class PrivateRecipeAPITests(TestCase):
             exists = recipes[0].ingredients.filter(name=ingredient['name']).exists()
             self.assertTrue(exists)
 
+    def test_tags_saved_uppercase(self):
+        """ Test saving tags is not case and whitespace sensitive """
+        tag = Tag.objects.create(user=self.user, name='For Vegans')
+        payload = {
+            'title': 'Test Recipe',
+            'description': 'Test Description',
+            'time_minutes': 20,
+            'price': Decimal(2.55),
+            'link': 'https://link.example.com',
+            'tags': [{'name': 'For Vegans'}, {'name': 'for vegans'}, {'name': 'for  vegans '}, {'name': ' for Vegans  '}]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(Tag.objects.count(), 1)
+        self.assertEqual(tag.name, res.data['tags'][0]['name'])
+
     def test_create_recipe_with_existing_ingredients(self):
         """ Test creating a recipe with existing ingredients """
         ingredient = Ingredient.objects.create(user=self.user, name='Pecorino Romano')
@@ -377,3 +394,20 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.assertEqual(recipe.ingredients.count(), 0)
+
+    def test_ingredients_saved_uppercase(self):
+        """ Test ingredients are being created consistently """
+        ingredient = Ingredient.objects.create(user=self.user, name='Red Wine')
+        payload = {
+            'title': 'Test Recipe',
+            'description': 'Test Description',
+            'time_minutes': 20,
+            'price': Decimal(2.55),
+            'link': 'https://link.example.com',
+            'ingredients': [{'name': 'Red Wine'}, {'name': 'red wine'}, {'name': 'red  wine '}, {'name': ' red Wine  '}]
+        }
+        res = self.client.post(RECIPES_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(Ingredient.objects.count(), 1)
+        self.assertEqual(ingredient.name, res.data['ingredients'][0]['name'])

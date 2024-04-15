@@ -41,6 +41,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         """ Handle getting or creating tags and ingredients """
         authenticated_user = self.context['request'].user
         for tag in tags:
+            tag['name'] = ' '.join(tag['name'].split()).title()
             tag_obj, created = Tag.objects.get_or_create(user=authenticated_user, **tag)
             recipe.tags.add(tag_obj)
 
@@ -49,6 +50,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         authenticated_user = self.context['request'].user
         for ingredient in ingredients:
             # This makes sure that we won't have repetetive ingredients in the DB.
+            ingredient['name'] = ' '.join(ingredient['name'].split()).title()
             ingredient_obj, created = Ingredient.objects.get_or_create(user=authenticated_user, **ingredient)
             recipe.ingredients.add(ingredient_obj)
 
