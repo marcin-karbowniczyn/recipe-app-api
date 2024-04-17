@@ -12,4 +12,5 @@ router.register('ingredients', views.IngredientViewset)
 
 urlpatterns = [
     path('', include(router.urls)),
+    # path('test/delete/', views.DeleteAllView.as_view())
 ]
