@@ -28,7 +28,7 @@ RUN python -m venv /py && \
     # -p makes sure all of the subdirectories will be created(vol, web, media)
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
-    chown -R django-user:dango-user /vol && \
+    chown -R django-user:django-user /vol && \
     chmod -R 755 /vol
 
 
