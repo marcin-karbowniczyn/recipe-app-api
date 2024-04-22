@@ -1,7 +1,19 @@
 """ Database models """
+import uuid
+import os
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+
+
+def recipe_image_file_path(instance, filename):
+    """ Generate filepath for new recipe image """
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+
+    # We don't create a string ourselves, we make sure the pathname is created appropriately to the OS
+    return os.path.join('uploads', 'recipe', filename)
 
 
 class UserManager(BaseUserManager):
@@ -48,6 +60,7 @@ class Recipe(models.Model):
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')
+    image = models.ImageField(null=True, upload_to=recipe_image_file_path)
 
     # This affects how these objects are displayed in the Django Admin
     def __str__(self):
