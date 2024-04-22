@@ -97,7 +97,7 @@ class RecipeDetailSerializer(RecipeSerializer):
     """ Serializer for Recipe Detail View """
 
     class Meta(RecipeSerializer.Meta):
-        fields = RecipeSerializer.Meta.fields + ['description']
+        fields = RecipeSerializer.Meta.fields + ['description', 'image']
 
 
 # We create a seperate API for images, because it's the best practice to only upload one type of data to an API.
