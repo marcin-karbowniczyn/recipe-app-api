@@ -10,6 +10,15 @@ from core.models import Recipe, Tag, Ingredient
 from recipe import serializers
 
 
+# V.131
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter('tags', OpenApiTypes.STR, description='Comma separated list of tags IDs to filter'),
+            OpenApiParameter('ingredients', OpenApiTypes.STR, description='Comma separated list of ingredient IDs to filter')
+        ]
+    )
+)
 class RecipeViewSet(viewsets.ModelViewSet):
     """ View for manage recipe API """
     # serializer_class = serializers.RecipeSerializer  # We use get_serializer_class instead
@@ -38,6 +47,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredient_ids = self._params_to_ints(ingredients)
             queryset = queryset.filter(ingredients__id__in=ingredient_ids)
 
+        # Disctinct() will remove duplicate objects from queryset
         return queryset.filter(user=self.request.user).order_by('-id').distinct()
 
     # Instead of having serializer = RecipeSerializer, we base our serializer on the action that viewset is handling
