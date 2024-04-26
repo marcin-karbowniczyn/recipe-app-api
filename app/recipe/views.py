@@ -1,4 +1,5 @@
 """ Views for the recipe API """
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter, OpenApiTypes
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -17,10 +18,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # Note: I can change it later to IsAuthenticatedOrReadOnly to allow anon users to acces GET methods.
     permission_classes = [IsAuthenticated]  # Not only that, user needs to be authenticated
 
+    def _params_to_ints(self, query_string):
+        """ Convert a list of strings to integers """
+        # '1,2,3' -> [1,2,3]
+        return [int(str_id) for str_id in query_string.split(',')]
+
     # We specify this, to limit the queryset to only recipes of the authenticated user
     def get_queryset(self):
         """ Retrieve recipes for authenticated user """
-        return self.queryset.filter(user=self.request.user).order_by('-id')
+        tags = self.request.query_params.get('tags')  # This will return None if there is no tags
+        ingredients = self.request.query_params.get('ingredients')
+        queryset = self.queryset
+
+        if tags:
+            tag_ids = self._params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
+
+        if ingredients:
+            ingredient_ids = self._params_to_ints(ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredient_ids)
+
+        return queryset.filter(user=self.request.user).order_by('-id').distinct()
 
     # Instead of having serializer = RecipeSerializer, we base our serializer on the action that viewset is handling
     def get_serializer_class(self):
