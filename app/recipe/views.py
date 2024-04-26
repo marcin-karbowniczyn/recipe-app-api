@@ -41,7 +41,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         if tags:
             tag_ids = self._params_to_ints(tags)
-            queryset = queryset.filter(tags__id__in=tag_ids)
+            queryset = queryset.filter(tags__id__in=tag_ids)  # tags__id__in -> Lookup fields
 
         if ingredients:
             ingredient_ids = self._params_to_ints(ingredients)
