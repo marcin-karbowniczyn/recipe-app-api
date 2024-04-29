@@ -110,12 +110,17 @@ class BaseRecipeAttrViewset(mixins.ListModelMixin, mixins.UpdateModelMixin, mixi
         return queryset.filter(user_id=self.request.user.id).order_by('-name').distinct()
 
 
+class IngredientViewset(BaseRecipeAttrViewset):
+    """ Manage ingredients in the database """
+    serializer_class = serializers.IngredientSerializer
+    queryset = Ingredient.objects.all()
+
+
 # We should always define mixins before vewsets.GenericViewSet (DRF docs)
 class TagViewSet(BaseRecipeAttrViewset):
     """ Manage tags in the databse """
     serializer_class = serializers.TagSerializer
     queryset = Tag.objects.all()
-
 
 # class TagViewSet(viewsets.ModelViewSet):
 #     """ View for manage Tag API"""
@@ -128,9 +133,3 @@ class TagViewSet(BaseRecipeAttrViewset):
 #         """ Filter queryset to authenticated user """
 #         # It can be either user_id=self.request.user.id or user=self.request.user
 #         return self.queryset.filter(user_id=self.request.user.id).order_by('-name')
-
-
-class IngredientViewset(BaseRecipeAttrViewset):
-    """ Manage ingredients in the database """
-    serializer_class = serializers.IngredientSerializer
-    queryset = Ingredient.objects.all()
