@@ -98,7 +98,7 @@ class PrivateIngredientsAPITests(TestCase):
         ing2 = Ingredient.objects.create(user=self.user, name='Coriander')
         recipe = Recipe.objects.create(
             user=self.user,
-            name='Spaghetti Carbonara',
+            title='Spaghetti Carbonara',
             time_minutes=20,
             price=Decimal('6.50')
         )

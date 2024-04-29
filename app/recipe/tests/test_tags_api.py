@@ -1,4 +1,6 @@
 """ Tests for the tags API """
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
@@ -6,7 +8,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Tag
+from core.models import Tag, Recipe
 from recipe.serializers import TagSerializer
 
 TAGS_URL = reverse('recipe:tag-list')
@@ -87,3 +89,51 @@ class PrivateTagsAPITests(TestCase):
 
         tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
+
+    def test_filter_tags_assigned_to_recipes(self):
+        """ Test listing tags to those that are assigned to recipes """
+        tag1 = Tag.objects.create(user=self.user, name='Vegetarian')
+        tag2 = Tag.objects.create(user=self.user, name='Meat')
+
+        recipe = Recipe.objects.create(
+            title='Tomato Salad',
+            time_minutes=10,
+            price=Decimal('1.50'),
+            user=self.user,
+        )
+        recipe.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+
+        # Sprawdzić czy zadziałają te dwie linijki
+        res2 = self.client.get(TAGS_URL, {'dupa': 1})
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+
+        serialized_tag1 = TagSerializer(tag1)
+        serialized_tag2 = TagSerializer(tag2)
+
+        self.assertIn(serialized_tag1, res.data)
+        self.assertNotIn(serialized_tag2, res.data)
+
+    def test_filtered_tags_unique(self):
+        tag1 = Tag.objects.create(user=self.user, name='Breakfast')
+        Tag.objects.create(user=self.user, name='Dinner')
+
+        recipe1 = Recipe.objects.create(
+            title='Scrumbled Eggs',
+            time_minutes=10,
+            price=Decimal('1.00'),
+            user=self.user,
+        )
+
+        recipe2 = Recipe.objects.create(
+            title='Croque Madam',
+            time_minutes=20,
+            price=3.00,
+            user=self.user,
+        )
+        recipe1.tags.add(tag1)
+        recipe2.tags.add(tag1)
+
+        res = self.client.get(TAGS_URL, {'assigned_only': 1})
+        self.assertEqual(len(res.data), 1)
