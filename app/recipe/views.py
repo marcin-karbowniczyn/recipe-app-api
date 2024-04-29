@@ -134,12 +134,3 @@ class IngredientViewset(BaseRecipeAttrViewset):
     """ Manage ingredients in the database """
     serializer_class = serializers.IngredientSerializer
     queryset = Ingredient.objects.all()
-
-# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TESTING VIEWS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# class DeleteAllView(APIView):
-#     authentication_classes = [TokenAuthentication]
-#     permission_classes = [IsAdminUser]
-#
-#     def delete(self, request, pk=None):
-#         Recipe.objects.all().delete()
-#         return Response({'status': 'Success', 'message': 'All recipes has beed deleted'})
