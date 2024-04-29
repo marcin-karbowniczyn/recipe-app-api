@@ -105,15 +105,11 @@ class PrivateTagsAPITests(TestCase):
 
         res = self.client.get(TAGS_URL, {'assigned_only': 1})
 
-        # Sprawdzić czy zadziałają te dwie linijki
-        res2 = self.client.get(TAGS_URL, {'dupa': 1})
-        self.assertEqual(res2.status_code, status.HTTP_200_OK)
-
         serialized_tag1 = TagSerializer(tag1)
         serialized_tag2 = TagSerializer(tag2)
 
-        self.assertIn(serialized_tag1, res.data)
-        self.assertNotIn(serialized_tag2, res.data)
+        self.assertIn(serialized_tag1.data, res.data)
+        self.assertNotIn(serialized_tag2.data, res.data)
 
     def test_filtered_tags_unique(self):
         tag1 = Tag.objects.create(user=self.user, name='Breakfast')
