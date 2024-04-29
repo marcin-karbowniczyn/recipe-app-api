@@ -81,14 +81,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'assigned_only',
+                OpenApiTypes.INT, enum=[0, 1],
+                description='Filter by items assigned to recipes.'
+            )
+        ]
+    )
+)
 class BaseRecipeAttrViewset(mixins.ListModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]  # You cannot make a request to this endpoint, unless you are authenticated
 
     def get_queryset(self):
         """ Filter queryset to authenticated user """
+        queryset = self.queryset
+        # assigned_only = self.request.query_params.get('assigned_only') # It also works
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        if assigned_only:
+            queryset = queryset.filter(recipe__isnull=False)
+
         # It can be either user_id=self.request.user.id or user=self.request.user
-        return self.queryset.filter(user_id=self.request.user.id).order_by('-name')
+        return queryset.filter(user_id=self.request.user.id).order_by('-name').distinct()
 
 
 # We should always define mixins before vewsets.GenericViewSet (DRF docs)
