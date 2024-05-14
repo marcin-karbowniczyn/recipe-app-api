@@ -18,6 +18,7 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=test1234
+      - DEBUG=1
     depends_on: # It tells Docker Compose that the app service depends on the DB service. It will wait for the DB service to start before it starts the app service.
       - db
   
