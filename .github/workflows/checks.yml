@@ -1,7 +1,7 @@
 ---
 name: Checks
 
-# Trigger: we want this particular GitHub actions to run on push. Anytime we push code to GitHub, it's going to run the jobs we specify in this YAML file.
+# Trigger: we want this particular GitHub actions to run on push. Anytime we push code to GitHub, it's going to run the jobs we specify in this YAML file
 on: [ push ]
 
 # We define a new job called 'test-lint' (this is an id of a job)
