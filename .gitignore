@@ -5,7 +5,6 @@ __pycache__/
 
 # Custom
 .idea
-notatki.txt
 leetcode.py
 add_module.py
 mytest.py
